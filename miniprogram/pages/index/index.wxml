@@ -1,0 +1,55 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 统计卡片 -->
+  <view class="stats-card card">
+    <view class="stats-row">
+      <view class="stats-item">
+        <view class="stats-num text-highlight">{{stats.totalDays}}</view>
+        <view class="stats-label">累计打卡（天）</view>
+      </view>
+      <view class="stats-divider"></view>
+      <view class="stats-item">
+        <view class="stats-num text-highlight">{{stats.totalHours}}</view>
+        <view class="stats-label">总时长（小时）</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡列表 -->
+  <view class="list-header" wx:if="{{recordList.length > 0}}">
+    <text>打卡记录</text>
+  </view>
+
+  <view class="list-container">
+    <view 
+      class="record-card card" 
+      wx:for="{{recordList}}" 
+      wx:key="_id"
+      bindtap="onDetailTap"
+      data-id="{{item._id}}"
+    >
+      <view class="record-date">📅 {{item.date}}</view>
+      <view class="record-content">{{item.content}}</view>
+      <view class="record-footer">
+        <view class="record-duration">⏱ {{item.duration}}分钟</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && recordList.length === 0}}">
+    <view class="empty-icon">📝</view>
+    <view class="empty-text">暂无打卡记录</view>
+    <view class="empty-tip">点击右上角"+"开始打卡吧</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-more" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 悬浮添加按钮 -->
+  <view class="float-add-btn" bindtap="onAddCheckin">
+    <text class="float-add-icon">+</text>
+  </view>
+</view>

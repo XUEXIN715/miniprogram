@@ -1,0 +1,73 @@
+<view class="container">
+  <view class="detail-card card" wx:if="{{detail}}">
+    <view class="detail-header">
+      <view class="detail-date">📅 {{detail.date}}</view>
+    </view>
+
+    <view class="detail-item">
+      <view class="detail-label">学习内容</view>
+      <view class="detail-content">{{detail.content}}</view>
+    </view>
+
+    <view class="detail-item">
+      <view class="detail-label">学习时长</view>
+      <view class="detail-content text-highlight">{{detail.duration}}分钟</view>
+    </view>
+
+    <view class="detail-item">
+      <view class="detail-label">创建时间</view>
+      <view class="detail-content text-desc">{{detail.createTimeText}}</view>
+    </view>
+
+    <view class="detail-item" wx:if="{{detail.updateTimeText && detail.updateTimeText !== detail.createTimeText}}">
+      <view class="detail-label">更新时间</view>
+      <view class="detail-content text-desc">{{detail.updateTimeText}}</view>
+    </view>
+  </view>
+
+  <view class="action-btns" wx:if="{{detail}}">
+    <button class="btn-secondary" bindtap="onEdit" wx:if="{{!editing}}">编辑</button>
+    <button class="btn-danger" bindtap="onDelete">删除</button>
+  </view>
+
+  <!-- 编辑表单 -->
+  <view class="edit-card card" wx:if="{{editing && detail}}">
+    <view class="form-item">
+      <view class="form-label">学习内容</view>
+      <textarea 
+        class="form-textarea" 
+        value="{{editContent}}"
+        bindinput="onEditContentInput"
+        maxlength="500"
+        auto-height
+      />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">学习时长（分钟）</view>
+      <input 
+        class="edit-duration-input" 
+        type="number" 
+        value="{{editDuration}}"
+        bindinput="onEditDurationInput"
+      />
+    </view>
+
+    <view class="edit-actions">
+      <button class="btn-secondary" bindtap="onCancelEdit">取消</button>
+      <button class="btn-primary" bindtap="onSaveEdit" disabled="{{saving}}">
+        {{saving ? '保存中...' : '保存'}}
+      </button>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty" wx:if="{{!loading && !detail}}">
+    <text>记录不存在</text>
+  </view>
+</view>

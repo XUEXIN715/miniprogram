@@ -1,0 +1,55 @@
+<view class="container">
+  <view class="form-card card">
+    <view class="form-item">
+      <view class="form-label">打卡日期</view>
+      <view class="date-picker" bindtap="onDateSelect">
+        <text class="date-text">{{formData.date}}</text>
+        <text class="iconfont icon-calendar">📅</text>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">学习内容</view>
+      <textarea 
+        class="form-textarea" 
+        placeholder="请输入今天学习了什么..." 
+        value="{{formData.content}}"
+        bindinput="onContentInput"
+        maxlength="500"
+        auto-height
+      />
+      <view class="word-count">{{contentLength}}/500</view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">学习时长（分钟）</view>
+      <view class="duration-picker">
+        <view class="duration-btn" bindtap="onDurationMinus">-</view>
+        <input 
+          class="duration-input" 
+          type="number" 
+          value="{{formData.duration}}"
+          bindinput="onDurationInput"
+        />
+        <view class="duration-btn" bindtap="onDurationPlus">+</view>
+      </view>
+      <view class="duration-presets">
+        <view 
+          class="preset-tag {{formData.duration === item ? 'active' : ''}}" 
+          wx:for="{{[15, 30, 45, 60, 90, 120]}}" 
+          wx:key="*this"
+          bindtap="onPresetTap"
+          data-duration="{{item}}"
+        >
+          {{item}}分钟
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="submit-btn">
+    <button class="btn-primary" bindtap="onSubmit" disabled="{{submitting}}">
+      {{submitting ? '提交中...' : '提交打卡'}}
+    </button>
+  </view>
+</view>

@@ -1,0 +1,36 @@
+# 微信开发者工具
+.project.config.json.bak
+*.xcworkspace
+*.xcodeproj
+xcuserdata
+xcuserdata/*
+
+# 依赖
+node_modules/
+miniprogram_npm/
+
+# 日志
+*.log
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+
+# 云函数依赖上传
+uploadCloudFunction.sh

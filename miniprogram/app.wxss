@@ -1,0 +1,98 @@
+/**app.wxss**/
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  padding: 20rpx;
+} 
+
+button {
+  background: initial;
+}
+
+button:focus{
+  outline: 0;
+}
+
+button::after{
+  border: none;
+}
+
+
+page {
+  background: #f6f6f6;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+/* 全局卡片样式 */
+.card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 全局按钮样式 */
+.btn-primary {
+  background: #07C160;
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  padding: 20rpx 0;
+  text-align: center;
+  border: none;
+}
+
+.btn-primary:active {
+  background: #06ad56;
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #333333;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  padding: 20rpx 0;
+  text-align: center;
+  border: none;
+}
+
+.btn-danger {
+  background: #ee0a24;
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  padding: 20rpx 0;
+  text-align: center;
+  border: none;
+}
+
+.btn-danger:active {
+  background: #d60a22;
+}
+
+/* 文本样式 */
+.text-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.text-subtitle {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+.text-desc {
+  font-size: 26rpx;
+  color: #999999;
+}
+
+.text-highlight {
+  color: #07C160;
+  font-weight: bold;
+}
