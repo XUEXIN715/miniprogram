@@ -10,12 +10,27 @@
   padding-bottom: 20rpx;
   border-bottom: 2rpx solid #f0f0f0;
   margin-bottom: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .detail-date {
   font-size: 34rpx;
   font-weight: bold;
   color: #333333;
+}
+
+.detail-share {
+  font-size: 28rpx;
+  color: #07C160;
+  padding: 8rpx 16rpx;
+  background: rgba(7, 193, 96, 0.1);
+  border-radius: 8rpx;
+}
+
+.detail-share:active {
+  opacity: 0.7;
 }
 
 .detail-item {

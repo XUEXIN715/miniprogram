@@ -34,3 +34,9 @@ Thumbs.db
 
 # 云函数依赖上传
 uploadCloudFunction.sh
+
+# 微信开发者工具私有配置
+project.private.config.json
+
+# AI 规划文件
+.trae/

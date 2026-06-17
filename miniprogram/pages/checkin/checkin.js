@@ -105,6 +105,7 @@ Page({
 
     wx.cloud.callFunction({
       name: 'checkinAdd',
+      timeout: 30000,
       data: {
         content: content.trim(),
         duration,

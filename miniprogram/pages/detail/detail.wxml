@@ -1,7 +1,10 @@
 <view class="container">
   <view class="detail-card card" wx:if="{{detail}}">
     <view class="detail-header">
-      <view class="detail-date">📅 {{detail.date}}</view>
+      <view class="detail-date">{{detail.date}}</view>
+      <view class="detail-share" bindtap="onShare">
+        <text>分享</text>
+      </view>
     </view>
 
     <view class="detail-item">
@@ -30,7 +33,6 @@
     <button class="btn-danger" bindtap="onDelete">删除</button>
   </view>
 
-  <!-- 编辑表单 -->
   <view class="edit-card card" wx:if="{{editing && detail}}">
     <view class="form-item">
       <view class="form-label">学习内容</view>
@@ -56,17 +58,15 @@
     <view class="edit-actions">
       <button class="btn-secondary" bindtap="onCancelEdit">取消</button>
       <button class="btn-primary" bindtap="onSaveEdit" disabled="{{saving}}">
-        {{saving ? '保存中...' : '保存'}}
+        {{saving ? "保存中..." : "保存"}}
       </button>
     </view>
   </view>
 
-  <!-- 加载状态 -->
   <view class="loading" wx:if="{{loading}}">
     <text>加载中...</text>
   </view>
 
-  <!-- 空状态 -->
   <view class="empty" wx:if="{{!loading && !detail}}">
     <text>记录不存在</text>
   </view>

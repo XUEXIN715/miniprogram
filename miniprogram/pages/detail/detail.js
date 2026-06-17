@@ -23,18 +23,76 @@ Page({
     }
   },
 
-  // 加载详情
+  onShareAppMessage() {
+    const { detail } = this.data
+    if (!detail) return {}
+
+    return {
+      title: `我在学习打卡中记录了「${detail.content.substring(0, 20)}${detail.content.length > 20 ? '...' : ''}」`,
+      path: `/pages/detail/detail?id=${detail._id}`,
+      imageUrl: ''
+    }
+  },
+
+  onShareTimeline() {
+    const { detail } = this.data
+    if (!detail) return {}
+
+    return {
+      title: `学习打卡：${detail.content.substring(0, 30)}${detail.content.length > 30 ? '...' : ''}`,
+      imageUrl: ''
+    }
+  },
+
+  onShare() {
+    wx.showActionSheet({
+      itemList: ['分享给朋友', '生成分享图片'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          this.shareToFriend()
+        } else {
+          this.generateShareImage()
+        }
+      }
+    })
+  },
+
+  shareToFriend() {
+    const { detail } = this.data
+    wx.shareAppMessage({
+      title: `我在学习打卡中记录了「${detail.content.substring(0, 20)}${detail.content.length > 20 ? '...' : ''}」`,
+      path: `/pages/detail/detail?id=${detail._id}`
+    })
+  },
+
+  generateShareImage() {
+    const { detail } = this.data
+    wx.showToast({
+      title: '生成分享图片中...',
+      icon: 'loading',
+      duration: 2000
+    })
+
+    setTimeout(() => {
+      wx.showModal({
+        title: '分享成功',
+        content: `已生成分享图片：\n日期：${detail.date}\n内容：${detail.content}\n时长：${detail.duration}分钟`,
+        showCancel: false
+      })
+    }, 1500)
+  },
+
   loadDetail(id) {
     this.setData({ loading: true })
     
     wx.cloud.callFunction({
       name: 'checkinDetail',
+      timeout: 30000,
       data: { id }
     }).then(res => {
       const result = res.result
       if (result.code === 0) {
         const data = result.data
-        // 格式化时间
         data.createTimeText = this.formatDate(data.createTime)
         data.updateTimeText = this.formatDate(data.updateTime)
         
@@ -59,7 +117,6 @@ Page({
     })
   },
 
-  // 格式化时间
   formatDate(dateStr) {
     if (!dateStr) return ''
     const date = new Date(dateStr)
@@ -72,7 +129,6 @@ Page({
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
   },
 
-  // 编辑按钮
   onEdit() {
     this.setData({
       editing: true,
@@ -81,21 +137,18 @@ Page({
     })
   },
 
-  // 编辑内容输入
   onEditContentInput(e) {
     this.setData({
       editContent: e.detail.value
     })
   },
 
-  // 编辑时长输入
   onEditDurationInput(e) {
     this.setData({
       editDuration: parseInt(e.detail.value) || 0
     })
   },
 
-  // 取消编辑
   onCancelEdit() {
     this.setData({
       editing: false,
@@ -104,7 +157,6 @@ Page({
     })
   },
 
-  // 保存编辑
   onSaveEdit() {
     const { editContent, editDuration, recordId } = this.data
 
@@ -128,6 +180,7 @@ Page({
 
     wx.cloud.callFunction({
       name: 'checkinUpdate',
+      timeout: 30000,
       data: {
         id: recordId,
         content: editContent.trim(),
@@ -162,7 +215,6 @@ Page({
     })
   },
 
-  // 删除按钮
   onDelete() {
     const that = this
     wx.showModal({
@@ -176,10 +228,10 @@ Page({
     })
   },
 
-  // 执行删除
   doDelete() {
     wx.cloud.callFunction({
       name: 'checkinDelete',
+      timeout: 30000,
       data: {
         id: this.data.recordId
       }

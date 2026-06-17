@@ -1,5 +1,3 @@
-/* my.wxss */
-
 .container {
   padding: 30rpx;
 }
@@ -12,6 +10,12 @@
   display: flex;
   align-items: center;
   gap: 30rpx;
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
 }
 
 .avatar-placeholder {
@@ -36,9 +40,100 @@
   margin-bottom: 10rpx;
 }
 
-.user-id {
+.user-signature {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.edit-btn {
+  font-size: 36rpx;
+  padding: 10rpx 20rpx;
+  color: #07C160;
+  background: rgba(7, 193, 96, 0.1);
+  border-radius: 8rpx;
+}
+
+.edit-form {
+  padding-top: 20rpx;
+}
+
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #666666;
+  margin-bottom: 15rpx;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  width: 100%;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 30rpx;
+  box-sizing: border-box;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.edit-actions .btn-secondary,
+.edit-actions .btn-primary {
+  flex: 1;
+}
+
+.stats-card {
+  margin-bottom: 30rpx;
+}
+
+.stats-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 20rpx;
+}
+
+.stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.stats-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stats-num {
+  font-size: 40rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
   font-size: 24rpx;
   color: #999999;
+}
+
+.stats-divider {
+  width: 2rpx;
+  height: 50rpx;
+  background: #e0e0e0;
 }
 
 .menu-card {

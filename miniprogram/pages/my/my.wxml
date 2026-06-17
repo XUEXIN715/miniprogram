@@ -1,11 +1,48 @@
-<!--my.wxml-->
 <view class="container">
-  <view class="user-card card">
-    <view class="user-info">
-      <view class="avatar-placeholder">👤</view>
+  <view class="user-card card" wx:if="{{!loading}}">
+    <view class="user-info" wx:if="{{!editing}}">
+      <image class="avatar" src="{{userInfo.avatarUrl}}" mode="aspectFill" wx:if="{{userInfo.avatarUrl}}" />
+      <view class="avatar-placeholder" wx:else>👤</view>
       <view class="user-detail">
         <view class="user-name">{{userInfo.nickName || '微信用户'}}</view>
-        <view class="user-id">{{userInfo.openid ? 'ID: ' + userInfo.openid.substring(0, 8) + '...' : '加载中...'}}</view>
+        <view class="user-signature" wx:if="{{userInfo.signature}}">{{userInfo.signature}}</view>
+        <view class="user-signature text-desc" wx:else>暂无个性签名</view>
+      </view>
+      <view class="edit-btn" bindtap="onEdit">✏️</view>
+    </view>
+
+    <view class="edit-form" wx:if="{{editing}}">
+      <view class="form-item">
+        <view class="form-label">昵称</view>
+        <input class="form-input" value="{{editForm.nickName}}" bindinput="onEditNickNameInput" placeholder="请输入昵称" />
+      </view>
+      <view class="form-item">
+        <view class="form-label">个性签名</view>
+        <textarea class="form-textarea" value="{{editForm.signature}}" bindinput="onEditSignatureInput" placeholder="请输入个性签名" maxlength="50" auto-height />
+      </view>
+      <view class="edit-actions">
+        <button class="btn-secondary" bindtap="onCancelEdit">取消</button>
+        <button class="btn-primary" bindtap="onSaveEdit" disabled="{{saving}}">{{saving ? '保存中...' : '保存'}}</button>
+      </view>
+    </view>
+  </view>
+
+  <view class="stats-card card" wx:if="{{!loading && stats.totalDays}}">
+    <view class="stats-title">📊 学习统计</view>
+    <view class="stats-row">
+      <view class="stats-item">
+        <view class="stats-num text-highlight">{{stats.totalDays}}</view>
+        <view class="stats-label">累计打卡（天）</view>
+      </view>
+      <view class="stats-divider"></view>
+      <view class="stats-item">
+        <view class="stats-num text-highlight">{{stats.totalHours}}</view>
+        <view class="stats-label">总时长（小时）</view>
+      </view>
+      <view class="stats-divider"></view>
+      <view class="stats-item">
+        <view class="stats-num text-highlight">{{stats.streakDays}}</view>
+        <view class="stats-label">连续打卡（天）</view>
       </view>
     </view>
   </view>
@@ -34,5 +71,5 @@
     </view>
   </view>
 
-  <view class="version">v1.0.0</view>
+  <view class="version">v2.0.0</view>
 </view>

@@ -53,8 +53,7 @@
   },
   "appid": "wx6b5c8da5cb12750e",
   "projectname": "quickstart-wx-cloud",
-  "libVersion": "2.20.1",
-  "cloudfunctionTemplateRoot": "cloudfunctionTemplate/",
+  "libVersion": "3.16.1",
   "condition": {
     "search": {
       "list": []
@@ -79,11 +78,6 @@
     }
   },
   "compileType": "miniprogram",
-  "srcMiniprogramRoot": "miniprogram/",
-  "packOptions": {
-    "ignore": [],
-    "include": []
-  },
   "editorSetting": {
     "tabIndent": "insertSpaces",
     "tabSize": 2

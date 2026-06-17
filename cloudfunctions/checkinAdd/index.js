@@ -1,4 +1,3 @@
-// 云函数：checkinAdd - 新增打卡记录
 const cloud = require('wx-server-sdk')
 
 cloud.init({
@@ -13,7 +12,6 @@ exports.main = async (event, context) => {
 
   const { content, duration, date } = event
 
-  // 参数校验
   if (!content || content.trim() === '') {
     return {
       code: -1,
@@ -36,21 +34,33 @@ exports.main = async (event, context) => {
   }
 
   try {
-    const result = await db.collection('checkin_records').add({
+    const dateParts = date.split('-')
+    const year = parseInt(dateParts[0])
+    const month = parseInt(dateParts[1])
+    const day = parseInt(dateParts[2])
+    const dateObj = new Date(year, month - 1, day)
+    const weekday = dateObj.getDay() === 0 ? 7 : dateObj.getDay()
+
+    const addResult = await db.collection('checkin_records').add({
       data: {
         content: content.trim(),
         duration: Number(duration),
         date: date,
+        year: year,
+        month: month,
+        weekday: weekday,
         createTime: db.serverDate(),
         updateTime: db.serverDate()
       }
     })
 
+    await updateUserStats(openid, Number(duration), date)
+
     return {
       code: 0,
       msg: '打卡成功',
       data: {
-        _id: result._id
+        _id: addResult._id
       }
     }
   } catch (err) {
@@ -59,5 +69,49 @@ exports.main = async (event, context) => {
       code: -1,
       msg: '打卡失败：' + err.message
     }
+  }
+}
+
+async function updateUserStats(openid, duration, date) {
+  try {
+    const userResult = await db.collection('users').where({
+      _openid: openid
+    }).get()
+
+    if (userResult.data.length === 0) {
+      return
+    }
+
+    const user = userResult.data[0]
+    const updateData = {}
+
+    updateData.totalCheckins = (user.totalCheckins || 0) + 1
+    updateData.totalDuration = (user.totalDuration || 0) + duration
+    updateData.lastCheckinDate = date
+
+    const lastDate = user.lastCheckinDate || ''
+    if (lastDate) {
+      const lastDateObj = new Date(lastDate)
+      const currentDateObj = new Date(date)
+      const diffDays = (currentDateObj - lastDateObj) / (1000 * 60 * 60 * 24)
+
+      if (diffDays === 1) {
+        updateData.streakDays = (user.streakDays || 0) + 1
+      } else if (diffDays > 1) {
+        updateData.streakDays = 1
+      }
+    } else {
+      updateData.streakDays = 1
+    }
+
+    updateData.updateTime = db.serverDate()
+
+    await db.collection('users').where({
+      _openid: openid
+    }).update({
+      data: updateData
+    })
+  } catch (err) {
+    console.error('[updateUserStats] 错误：', err)
   }
 }
