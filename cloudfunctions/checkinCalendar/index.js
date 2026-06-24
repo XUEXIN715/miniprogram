@@ -1,3 +1,7 @@
+// 云函数：checkinCalendar - 查询打卡日历数据
+// 功能：根据年月查询用户当月的打卡情况，用于日历展示
+// 参数：year（年份）、month（月份）
+// 返回：code（状态码）、data.calendar（每日打卡数据数组）、data.totalDays（当月天数）
 const cloud = require('wx-server-sdk')
 
 cloud.init({

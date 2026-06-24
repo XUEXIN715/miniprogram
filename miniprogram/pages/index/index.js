@@ -1,5 +1,6 @@
 Page({
   data: {
+    userInfo: null,
     recordList: [],
     loading: false,
     stats: {
@@ -17,29 +18,28 @@ Page({
       data: []
     },
     weekDays: ['日', '一', '二', '三', '四', '五', '六'],
-    calendarLoading: false
+    calendarLoading: false,
+    categoryList: ['全部', '编程开发', '语言学习', '数学逻辑', '阅读写作', '考试备考', '其他'],
+    selectedCategory: '全部',
+    selectedDate: '',
+    showFilter: false
   },
 
-  async onLoad() {
+  onLoad() {
+    const now = new Date()
+    const initYear = now.getFullYear()
+    const initMonth = now.getMonth() + 1
+    this.setData({
+      'calendar.year': initYear,
+      'calendar.month': initMonth,
+      'calendar.data': this.buildEmptyCalendar(initYear, initMonth)
+    })
+
     console.log('[index] 开始加载数据')
-    try {
-      await this.loadRecordList()
-      console.log('[index] loadRecordList 完成')
-    } catch (e) {
-      console.error('[index] loadRecordList 失败:', e)
-    }
-    try {
-      await this.loadStats()
-      console.log('[index] loadStats 完成')
-    } catch (e) {
-      console.error('[index] loadStats 失败:', e)
-    }
-    try {
-      await this.loadCalendar()
-      console.log('[index] loadCalendar 完成')
-    } catch (e) {
-      console.error('[index] loadCalendar 失败:', e)
-    }
+    this.loadUserInfo().catch(e => console.error('[index] loadUserInfo 失败:', e))
+    this.loadRecordList().catch(e => console.error('[index] loadRecordList 失败:', e))
+    this.loadStats().catch(e => console.error('[index] loadStats 失败:', e))
+    this.loadCalendar().catch(e => console.error('[index] loadCalendar 失败:', e))
     console.log('[index] 数据加载全部完成')
   },
 
@@ -57,6 +57,58 @@ Page({
     }
   },
 
+  // 加载用户信息
+  loadUserInfo() {
+    const app = getApp()
+    if (app.globalData.userInfo) {
+      this.setData({
+        userInfo: app.globalData.userInfo
+      })
+      return Promise.resolve()
+    }
+
+    return wx.cloud.callFunction({
+      name: 'getUserInfo',
+      timeout: 30000,
+      data: {}
+    }).then(res => {
+      if (res.result.code === 0) {
+        app.globalData.userInfo = res.result.data
+        this.setData({
+          userInfo: res.result.data
+        })
+      }
+    }).catch(err => {
+      console.error('[index] 加载用户信息失败:', err)
+    })
+  },
+
+  // 获取用户信息（点击头像）
+  onGetUserProfile() {
+    wx.getUserProfile({
+      desc: '用于完善用户资料',
+      success: (res) => {
+        const userInfo = res.userInfo
+        wx.cloud.callFunction({
+          name: 'getUserInfo',
+          timeout: 30000,
+          data: {
+            nickName: userInfo.nickName,
+            avatarUrl: userInfo.avatarUrl
+          }
+        }).then(result => {
+          if (result.result.code === 0) {
+            const app = getApp()
+            app.globalData.userInfo = result.result.data
+            this.setData({
+              userInfo: result.result.data
+            })
+          }
+        })
+      }
+    })
+  },
+
   refreshData() {
     this.setData({
       page: 1,
@@ -71,18 +123,28 @@ Page({
   loadRecordList() {
     this.setData({ loading: true })
 
+    const data = {
+      page: this.data.page,
+      pageSize: this.data.pageSize
+    }
+
+    // 添加筛选条件
+    if (this.data.selectedCategory && this.data.selectedCategory !== '全部') {
+      data.category = this.data.selectedCategory
+    }
+    if (this.data.selectedDate) {
+      data.startDate = this.data.selectedDate
+      data.endDate = this.data.selectedDate
+    }
+
     return wx.cloud.callFunction({
       name: 'checkinList',
       timeout: 30000,
-      data: {
-        page: this.data.page,
-        pageSize: this.data.pageSize
-      }
+      data
     }).then(res => {
       const result = res.result
       if (result.code === 0) {
-        const { list, total, page, pageSize, debug } = result.data
-        console.log('[index] checkinList debug:', debug)
+        const { list, total, page, pageSize } = result.data
 
         this.setData({
           recordList: page === 1 ? list : [...this.data.recordList, ...list],
@@ -137,12 +199,14 @@ Page({
     })
   },
 
-  loadCalendar() {
+  loadCalendar(year, month) {
     this.setData({ calendarLoading: true })
 
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth() + 1
+    if (!year || !month) {
+      const now = new Date()
+      year = now.getFullYear()
+      month = now.getMonth() + 1
+    }
 
     return wx.cloud.callFunction({
       name: 'checkinCalendar',
@@ -153,36 +217,82 @@ Page({
       }
     }).then(res => {
       const result = res.result
-      if (result.code === 0) {
+      if (result && result.code === 0) {
         const { calendar } = result.data
         this.setData({
           'calendar.year': year,
           'calendar.month': month,
-          'calendar.data': this.buildCalendarData(calendar)
+          'calendar.data': this.buildCalendarData(calendar, year, month)
+        })
+      } else {
+        this.setData({
+          'calendar.year': year,
+          'calendar.month': month,
+          'calendar.data': this.buildEmptyCalendar(year, month)
         })
       }
       this.setData({ calendarLoading: false })
     }).catch(err => {
       console.error('[index] 加载日历数据失败:', err)
-      this.setData({ calendarLoading: false })
+      this.setData({
+        'calendar.year': year,
+        'calendar.month': month,
+        'calendar.data': this.buildEmptyCalendar(year, month),
+        calendarLoading: false
+      })
     })
   },
 
-  buildCalendarData(calendarData) {
+  buildEmptyCalendar(year, month) {
+    const daysInMonth = new Date(year, month, 0).getDate()
+    const calendar = []
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+      calendar.push({
+        date: dateStr,
+        day: day,
+        hasCheckin: false,
+        duration: 0
+      })
+    }
+    return this.buildCalendarData(calendar, year, month)
+  },
+
+  onPrevMonth() {
+    let year = this.data.calendar.year
+    let month = this.data.calendar.month - 1
+    if (month < 1) {
+      month = 12
+      year--
+    }
+    this.loadCalendar(year, month)
+  },
+
+  onNextMonth() {
+    let year = this.data.calendar.year
+    let month = this.data.calendar.month + 1
+    if (month > 12) {
+      month = 1
+      year++
+    }
+    this.loadCalendar(year, month)
+  },
+
+  buildCalendarData(calendarData, year, month) {
     const now = new Date()
-    const year = now.getFullYear()
-    const month = now.getMonth() + 1
     const firstDay = new Date(year, month - 1, 1).getDay()
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
     
     const result = []
     for (let i = 0; i < firstDay; i++) {
-      result.push({ empty: true })
+      result.push({ empty: true, idx: i })
     }
     
-    calendarData.forEach(day => {
+    calendarData.forEach((day, index) => {
       result.push({
         ...day,
-        isToday: day.date === `${year}-${String(month).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+        isToday: day.date === todayStr,
+        idx: firstDay + index
       })
     })
     
@@ -207,6 +317,46 @@ Page({
         }
       })
     }
+  },
+
+  // 筛选相关方法
+  onToggleFilter() {
+    this.setData({
+      showFilter: !this.data.showFilter
+    })
+  },
+
+  onCategoryChange(e) {
+    const category = this.data.categoryList[e.detail.value]
+    this.setData({
+      selectedCategory: category,
+      page: 1,
+      recordList: [],
+      hasMore: true
+    })
+    this.loadRecordList()
+  },
+
+  onDateChange(e) {
+    const date = e.detail.value
+    this.setData({
+      selectedDate: date,
+      page: 1,
+      recordList: [],
+      hasMore: true
+    })
+    this.loadRecordList()
+  },
+
+  onClearFilter() {
+    this.setData({
+      selectedCategory: '全部',
+      selectedDate: '',
+      page: 1,
+      recordList: [],
+      hasMore: true
+    })
+    this.loadRecordList()
   },
 
   onDetailTap(e) {

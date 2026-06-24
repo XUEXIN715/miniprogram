@@ -1,5 +1,6 @@
 <view class="container">
-  <view class="detail-card card" wx:if="{{detail}}">
+  <!-- 详情展示 -->
+  <view class="detail-card card" wx:if="{{detail && !editing}}">
     <view class="detail-header">
       <view class="detail-date">{{detail.date}}</view>
       <view class="detail-share" bindtap="onShare">
@@ -7,14 +8,28 @@
       </view>
     </view>
 
+    <!-- 分类标签 -->
+    <view class="detail-category-tag" wx:if="{{detail.category}}">{{detail.category}}</view>
+
     <view class="detail-item">
       <view class="detail-label">学习内容</view>
       <view class="detail-content">{{detail.content}}</view>
     </view>
 
+    <!-- 图片展示 -->
+    <view class="detail-image" wx:if="{{detail.imageUrl}}" bindtap="onPreviewImage">
+      <image src="{{detail.imageUrl}}" mode="aspectFill" class="detail-img" lazy-load/>
+    </view>
+
     <view class="detail-item">
       <view class="detail-label">学习时长</view>
       <view class="detail-content text-highlight">{{detail.duration}}分钟</view>
+    </view>
+
+    <!-- 用户信息 -->
+    <view class="detail-user" wx:if="{{detail.nickName}}">
+      <image src="{{detail.avatarUrl || '/images/icons/avatar.png'}}" class="detail-user-avatar"/>
+      <text class="detail-user-name">{{detail.nickName}}</text>
     </view>
 
     <view class="detail-item">
@@ -28,12 +43,27 @@
     </view>
   </view>
 
-  <view class="action-btns" wx:if="{{detail}}">
-    <button class="btn-secondary" bindtap="onEdit" wx:if="{{!editing}}">编辑</button>
+  <!-- 操作按钮 -->
+  <view class="action-btns" wx:if="{{detail && !editing}}">
+    <button class="btn-secondary" bindtap="onEdit">编辑</button>
     <button class="btn-danger" bindtap="onDelete">删除</button>
   </view>
 
+  <!-- 编辑模式 -->
   <view class="edit-card card" wx:if="{{editing && detail}}">
+    <view class="edit-title">编辑打卡记录</view>
+    
+    <!-- 分类选择 -->
+    <view class="form-item">
+      <view class="form-label">学习分类</view>
+      <picker bindchange="onEditCategoryChange" value="{{categoryIndex}}" range="{{categoryList}}">
+        <view class="category-picker">
+          <text>{{editCategory}}</text>
+          <text>▼</text>
+        </view>
+      </picker>
+    </view>
+
     <view class="form-item">
       <view class="form-label">学习内容</view>
       <textarea 
@@ -43,6 +73,21 @@
         maxlength="500"
         auto-height
       />
+    </view>
+
+    <!-- 图片编辑 -->
+    <view class="form-item">
+      <view class="form-label">学习截图</view>
+      <view class="image-upload">
+        <view class="image-preview" wx:if="{{tempImagePath}}">
+          <image src="{{tempImagePath}}" mode="aspectFill" class="preview-img" bindtap="onPreviewImage"/>
+          <view class="image-remove" bindtap="onEditRemoveImage">✕</view>
+        </view>
+        <view class="image-add" wx:if="{{!tempImagePath}}" bindtap="onEditChooseImage">
+          <text class="image-add-icon">+</text>
+          <text class="image-add-text">更换图片</text>
+        </view>
+      </view>
     </view>
 
     <view class="form-item">
@@ -63,10 +108,12 @@
     </view>
   </view>
 
+  <!-- 加载中 -->
   <view class="loading" wx:if="{{loading}}">
     <text>加载中...</text>
   </view>
 
+  <!-- 空状态 -->
   <view class="empty" wx:if="{{!loading && !detail}}">
     <text>记录不存在</text>
   </view>

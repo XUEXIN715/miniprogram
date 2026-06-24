@@ -1,3 +1,7 @@
+// 云函数：userInit - 初始化用户信息
+// 功能：新用户首次进入时创建用户记录，存储昵称、头像等基础信息
+// 参数：nickName（昵称）、avatarUrl（头像）
+// 返回：code（状态码）、data.userInfo（用户信息对象）
 const cloud = require('wx-server-sdk')
 
 cloud.init({

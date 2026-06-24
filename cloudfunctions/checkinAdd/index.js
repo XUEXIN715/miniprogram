@@ -1,3 +1,7 @@
+// 云函数：checkinAdd - 添加打卡记录
+// 功能：接收用户提交的打卡内容、时长、日期、分类、图片等信息，存入数据库
+// 参数：content（学习内容）、duration（时长，分钟）、date（日期）、category（分类）、imageUrl（图片fileID）
+// 返回：code（状态码）、msg（提示信息）、data._id（新增记录ID）
 const cloud = require('wx-server-sdk')
 
 cloud.init({
@@ -10,7 +14,7 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
 
-  const { content, duration, date } = event
+  const { content, duration, date, category, imageUrl } = event
 
   if (!content || content.trim() === '') {
     return {
@@ -41,11 +45,31 @@ exports.main = async (event, context) => {
     const dateObj = new Date(year, month - 1, day)
     const weekday = dateObj.getDay() === 0 ? 7 : dateObj.getDay()
 
+    // 获取用户信息
+    let nickName = ''
+    let avatarUrl = ''
+    try {
+      const userResult = await db.collection('users').where({
+        _openid: openid
+      }).get()
+      if (userResult.data.length > 0) {
+        nickName = userResult.data[0].nickName || ''
+        avatarUrl = userResult.data[0].avatarUrl || ''
+      }
+    } catch (e) {
+      console.error('[checkinAdd] 获取用户信息失败:', e)
+    }
+
     const addResult = await db.collection('checkin_records').add({
       data: {
+        _openid: openid,
         content: content.trim(),
         duration: Number(duration),
         date: date,
+        category: category || '其他',
+        imageUrl: imageUrl || '',
+        nickName: nickName,
+        avatarUrl: avatarUrl,
         year: year,
         month: month,
         weekday: weekday,

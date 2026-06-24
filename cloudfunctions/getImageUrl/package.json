@@ -1,0 +1,9 @@
+{
+  "name": "getImageUrl",
+  "version": "1.0.0",
+  "description": "获取云存储图片临时URL",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~3.0.0"
+  }
+}

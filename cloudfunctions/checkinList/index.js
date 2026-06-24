@@ -1,6 +1,4 @@
-// 云函数：checkinList - 查询打卡列表
-console.log('[checkinList] 云函数启动加载')
-
+// 云函数：checkinList - 查询打卡列表（支持筛选）
 const cloud = require('wx-server-sdk')
 
 cloud.init({
@@ -8,46 +6,81 @@ cloud.init({
 })
 
 const db = cloud.database()
+const _ = db.command
 
 exports.main = async (event, context) => {
-  console.log('[checkinList] 收到请求, event:', JSON.stringify(event))
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
-  console.log('[checkinList] openid:', openid)
 
-  const { page = 1, pageSize = 10 } = event
+  const { page = 1, pageSize = 10, category, startDate, endDate } = event
 
   try {
-    // 测试：先查询所有记录，确认数据是否存在
-    const allResult = await db.collection('checkin_records').limit(100).get()
-    console.log('[checkinList] 所有记录条数:', allResult.data.length)
-    console.log('[checkinList] 所有记录_openid:', allResult.data.map(r => r._openid))
-
-    const countResult = await db.collection('checkin_records').where({
+    // 构建查询条件
+    const whereCondition = {
       _openid: openid
-    }).count()
-    console.log('[checkinList] count结果:', countResult)
+    }
 
+    // 分类筛选
+    if (category && category !== '全部') {
+      whereCondition.category = category
+    }
+
+    // 日期范围筛选
+    if (startDate || endDate) {
+      whereCondition.date = {}
+      if (startDate) {
+        whereCondition.date = _.gte(startDate)
+      }
+      if (endDate) {
+        whereCondition.date = _.lte(endDate)
+      }
+      if (startDate && endDate) {
+        whereCondition.date = _.gte(startDate).and(_.lte(endDate))
+      }
+    }
+
+    // 查询总数
+    const countResult = await db.collection('checkin_records').where(whereCondition).count()
     const total = countResult.total
 
-    const result = await db.collection('checkin_records').where({
-      _openid: openid
-    }).orderBy('date', 'desc').skip((page - 1) * pageSize).limit(pageSize).get()
-    console.log('[checkinList] get结果条数:', result.data.length)
+    // 查询列表
+    const result = await db.collection('checkin_records')
+      .where(whereCondition)
+      .orderBy('date', 'desc')
+      .skip((page - 1) * pageSize)
+      .limit(pageSize)
+      .get()
+
+    // 转换云存储图片fileID为临时访问URL
+    const list = result.data
+    const imageFileIds = list.filter(item => item.imageUrl && item.imageUrl.startsWith('cloud://')).map(item => item.imageUrl)
+    if (imageFileIds.length > 0) {
+      try {
+        const tempUrlResult = await cloud.getTempFileURL({
+          fileList: imageFileIds
+        })
+        const urlMap = {}
+        tempUrlResult.fileList.forEach(item => {
+          urlMap[item.fileID] = item.tempFileURL
+        })
+        list.forEach(item => {
+          if (item.imageUrl && urlMap[item.imageUrl]) {
+            item.imageUrl = urlMap[item.imageUrl]
+          }
+        })
+      } catch (urlErr) {
+        console.error('[checkinList] 获取临时图片URL失败:', urlErr)
+      }
+    }
 
     return {
       code: 0,
       msg: '查询成功',
       data: {
-        list: result.data,
+        list: list,
         total,
         page,
-        pageSize,
-        debug: {
-          openid,
-          allCount: allResult.data.length,
-          allOpenids: allResult.data.map(r => r._openid)
-        }
+        pageSize
       }
     }
   } catch (err) {

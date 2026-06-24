@@ -1,3 +1,7 @@
+// 云函数：checkinStats - 查询打卡统计数据
+// 功能：统计用户的累计打卡天数、总时长、连续打卡天数、日均时长
+// 参数：无
+// 返回：code（状态码）、data.totalDays（累计天数）、data.totalMinutes（总分钟数）、data.streakDays（连续天数）、data.avgDailyMinutes（日均分钟）
 const cloud = require('wx-server-sdk')
 
 cloud.init({

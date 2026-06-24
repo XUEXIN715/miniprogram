@@ -1,3 +1,7 @@
+// 云函数：userUpdate - 更新用户信息
+// 功能：更新用户的昵称、签名、提醒时间等个人设置
+// 参数：nickName（昵称，可选）、signature（签名，可选）、reminderTime（提醒时间，可选）
+// 返回：code（状态码）、msg（提示信息）
 const cloud = require('wx-server-sdk')
 
 cloud.init({

@@ -33,10 +33,26 @@ exports.main = async (event, context) => {
       }
     }
 
+    const detail = result.data[0]
+
+    // 转换云存储图片fileID为临时访问URL
+    if (detail.imageUrl && detail.imageUrl.startsWith('cloud://')) {
+      try {
+        const tempUrlResult = await cloud.getTempFileURL({
+          fileList: [detail.imageUrl]
+        })
+        if (tempUrlResult.fileList && tempUrlResult.fileList.length > 0) {
+          detail.imageUrl = tempUrlResult.fileList[0].tempFileURL
+        }
+      } catch (urlErr) {
+        console.error('[checkinDetail] 获取临时图片URL失败:', urlErr)
+      }
+    }
+
     return {
       code: 0,
       msg: '查询成功',
-      data: result.data[0]
+      data: detail
     }
   } catch (err) {
     console.error('[checkinDetail] 错误：', err)

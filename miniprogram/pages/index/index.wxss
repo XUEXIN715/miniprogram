@@ -50,15 +50,48 @@ page {
   margin-bottom: 20rpx;
 }
 
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
 .calendar-title {
   font-size: 30rpx;
   font-weight: bold;
   color: #333333;
 }
 
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.nav-btn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+  border-radius: 50%;
+  font-size: 32rpx;
+  color: #666666;
+  line-height: 1;
+}
+
+.nav-btn:active {
+  background: #e8e8e8;
+}
+
 .calendar-month {
   font-size: 28rpx;
-  color: #666666;
+  color: #333333;
+  font-weight: 500;
+  min-width: 180rpx;
+  text-align: center;
 }
 
 .calendar-weekdays {
@@ -77,21 +110,24 @@ page {
 .calendar-grid {
   display: flex;
   flex-wrap: wrap;
+  margin: 10rpx 0;
 }
 
 .calendar-day {
   width: calc(100% / 7);
-  aspect-ratio: 1;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 28rpx;
   color: #333333;
   position: relative;
+  box-sizing: border-box;
 }
 
 .calendar-day.empty {
   background: transparent;
+  color: transparent;
 }
 
 .calendar-day.checked {
@@ -99,24 +135,49 @@ page {
   font-weight: bold;
 }
 
-.calendar-day.checked::after {
-  content: '';
+.calendar-day.checked .day-circle {
   position: absolute;
-  bottom: 8rpx;
-  width: 12rpx;
-  height: 12rpx;
-  background: #07C160;
+  width: 56rpx;
+  height: 56rpx;
+  background: rgba(7, 193, 96, 0.15);
   border-radius: 50%;
+  z-index: 0;
+}
+
+.calendar-day.checked .day-text {
+  position: relative;
+  z-index: 1;
+  color: #07C160;
 }
 
 .calendar-day.today {
-  background: #07C160;
   color: #ffffff;
-  border-radius: 50%;
+  font-weight: bold;
 }
 
-.calendar-day.today.checked::after {
-  display: none;
+.calendar-day.today .day-circle {
+  position: absolute;
+  width: 56rpx;
+  height: 56rpx;
+  background: #07C160;
+  border-radius: 50%;
+  z-index: 0;
+}
+
+.calendar-day.today .day-text {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+}
+
+.calendar-day.today.checked .day-circle {
+  background: #07C160;
+  width: 56rpx;
+  height: 56rpx;
+}
+
+.calendar-day.today.checked .day-text {
+  color: #ffffff;
 }
 
 .calendar-day:active {
@@ -126,7 +187,7 @@ page {
 .calendar-legend {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20rpx;
+  margin-top: 15rpx;
   padding-top: 15rpx;
   border-top: 1rpx solid #f0f0f0;
 }
@@ -140,8 +201,8 @@ page {
 }
 
 .legend-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 20rpx;
+  height: 20rpx;
   border-radius: 50%;
   background: #e0e0e0;
   margin-right: 10rpx;
@@ -149,6 +210,12 @@ page {
 
 .legend-dot.checked {
   background: #07C160;
+}
+
+.legend-dot.today {
+  background: #07C160;
+  border: 2rpx solid #ffffff;
+  box-shadow: 0 0 0 2rpx #07C160;
 }
 
 .list-header {
@@ -248,4 +315,161 @@ page {
   color: #ffffff;
   font-weight: 300;
   line-height: 1;
+}
+
+/* 用户信息卡片 */
+.user-card {
+  margin-bottom: 30rpx;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  margin-right: 20rpx;
+  background: #f0f0f0;
+}
+
+.user-detail {
+  flex: 1;
+}
+
+.user-name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 8rpx;
+}
+
+.user-desc {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+/* 筛选栏 */
+.filter-card {
+  margin-bottom: 30rpx;
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333333;
+}
+
+.filter-toggle {
+  font-size: 26rpx;
+  color: #07C160;
+}
+
+.filter-body {
+  margin-top: 20rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.filter-item:last-child {
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 28rpx;
+  color: #666666;
+  width: 140rpx;
+}
+
+.filter-picker {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15rpx 20rpx;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333333;
+}
+
+.filter-arrow {
+  font-size: 20rpx;
+  color: #999999;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20rpx;
+}
+
+.filter-clear {
+  font-size: 26rpx;
+  color: #ee0a24;
+  padding: 10rpx 20rpx;
+}
+
+.filter-summary {
+  margin-top: 15rpx;
+  font-size: 24rpx;
+  color: #07C160;
+}
+
+.filter-summary text {
+  margin-right: 20rpx;
+}
+
+/* 记录卡片升级 */
+.record-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15rpx;
+}
+
+.record-category {
+  font-size: 24rpx;
+  color: #07C160;
+  background: rgba(7, 193, 96, 0.1);
+  padding: 4rpx 16rpx;
+  border-radius: 20rpx;
+}
+
+.record-image {
+  margin-bottom: 15rpx;
+}
+
+.record-img {
+  width: 100%;
+  height: 300rpx;
+  border-radius: 12rpx;
+}
+
+.record-user {
+  display: flex;
+  align-items: center;
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.record-user-avatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  margin-right: 10rpx;
 }

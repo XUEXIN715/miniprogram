@@ -1,13 +1,28 @@
 <view class="container">
   <view class="form-card card">
+    <!-- 日期选择 -->
     <view class="form-item">
       <view class="form-label">打卡日期</view>
-      <view class="date-picker" bindtap="onDateSelect">
-        <text class="date-text">{{formData.date}}</text>
-        <text class="iconfont icon-calendar">📅</text>
-      </view>
+      <picker mode="date" value="{{formData.date}}" bindchange="onDateChange">
+        <view class="date-picker">
+          <text class="date-text">{{formData.date}}</text>
+          <text class="iconfont icon-calendar">📅</text>
+        </view>
+      </picker>
     </view>
 
+    <!-- 分类选择 -->
+    <view class="form-item">
+      <view class="form-label">学习分类</view>
+      <picker bindchange="onCategoryChange" value="{{categoryIndex}}" range="{{categoryList}}">
+        <view class="category-picker">
+          <text class="category-text">{{formData.category}}</text>
+          <text class="iconfont">▼</text>
+        </view>
+      </picker>
+    </view>
+
+    <!-- 学习内容 -->
     <view class="form-item">
       <view class="form-label">学习内容</view>
       <textarea 
@@ -21,6 +36,24 @@
       <view class="word-count">{{contentLength}}/500</view>
     </view>
 
+    <!-- 学习截图 -->
+    <view class="form-item">
+      <view class="form-label">学习截图（可选）</view>
+      <view class="image-upload">
+        <!-- 已上传图片 -->
+        <view class="image-preview" wx:if="{{tempImagePath}}">
+          <image src="{{tempImagePath}}" mode="aspectFill" class="preview-img" bindtap="onPreviewImage"/>
+          <view class="image-remove" bindtap="onRemoveImage">✕</view>
+        </view>
+        <!-- 上传按钮 -->
+        <view class="image-add" wx:if="{{!tempImagePath}}" bindtap="onChooseImage">
+          <text class="image-add-icon">+</text>
+          <text class="image-add-text">上传图片</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 学习时长 -->
     <view class="form-item">
       <view class="form-label">学习时长（分钟）</view>
       <view class="duration-picker">
@@ -47,6 +80,7 @@
     </view>
   </view>
 
+  <!-- 提交按钮 -->
   <view class="submit-btn">
     <button class="btn-primary" bindtap="onSubmit" disabled="{{submitting}}">
       {{submitting ? '提交中...' : '提交打卡'}}

@@ -3,10 +3,17 @@ Page({
     formData: {
       date: '',
       content: '',
-      duration: 30
+      duration: 30,
+      category: '其他',
+      imageUrl: ''
     },
     contentLength: 0,
-    submitting: false
+    submitting: false,
+    // 分类列表
+    categoryList: ['编程开发', '语言学习', '数学逻辑', '阅读写作', '考试备考', '其他'],
+    categoryIndex: 5,
+    // 图片预览
+    tempImagePath: ''
   },
 
   onLoad() {
@@ -15,6 +22,8 @@ Page({
     this.setData({
       'formData.date': today
     })
+    // 加载分类列表
+    this.loadCategoryList()
   },
 
   // 获取今天的日期 YYYY-MM-DD
@@ -26,13 +35,37 @@ Page({
     return `${year}-${month}-${day}`
   },
 
+  // 加载分类列表
+  loadCategoryList() {
+    wx.cloud.callFunction({
+      name: 'getCategoryList',
+      timeout: 30000,
+      data: {}
+    }).then(res => {
+      if (res.result.code === 0) {
+        const list = res.result.data.list.map(item => item.name)
+        this.setData({
+          categoryList: list
+        })
+      }
+    }).catch(err => {
+      console.error('[checkin] 加载分类失败:', err)
+    })
+  },
+
   // 日期选择
-  onDateSelect() {
-    const that = this
-    wx.showModal({
-      title: '选择日期',
-      content: '当前日期: ' + this.data.formData.date,
-      showCancel: false
+  onDateChange(e) {
+    this.setData({
+      'formData.date': e.detail.value
+    })
+  },
+
+  // 分类选择
+  onCategoryChange(e) {
+    const index = parseInt(e.detail.value)
+    this.setData({
+      categoryIndex: index,
+      'formData.category': this.data.categoryList[index]
     })
   },
 
@@ -80,9 +113,72 @@ Page({
     })
   },
 
+  // 选择图片
+  onChooseImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath
+        this.setData({
+          tempImagePath: tempFilePath
+        })
+        // 上传图片到云存储
+        this.uploadImage(tempFilePath)
+      }
+    })
+  },
+
+  // 上传图片到云存储
+  uploadImage(filePath) {
+    wx.showLoading({ title: '上传中...' })
+
+    const cloudPath = `checkin-images/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
+      filePath: filePath,
+      success: (res) => {
+        this.setData({
+          'formData.imageUrl': res.fileID
+        })
+        wx.showToast({
+          title: '上传成功',
+          icon: 'success'
+        })
+      },
+      fail: (err) => {
+        console.error('[checkin] 上传图片失败:', err)
+        wx.showToast({
+          title: '上传失败',
+          icon: 'none'
+        })
+      },
+      complete: () => {
+        wx.hideLoading()
+      }
+    })
+  },
+
+  // 删除图片
+  onRemoveImage() {
+    this.setData({
+      tempImagePath: '',
+      'formData.imageUrl': ''
+    })
+  },
+
+  // 预览图片
+  onPreviewImage() {
+    wx.previewImage({
+      urls: [this.data.tempImagePath]
+    })
+  },
+
   // 提交打卡
   onSubmit() {
-    const { content, duration, date } = this.data.formData
+    const { content, duration, date, category, imageUrl } = this.data.formData
 
     // 表单验证
     if (!content || content.trim() === '') {
@@ -109,7 +205,9 @@ Page({
       data: {
         content: content.trim(),
         duration,
-        date
+        date,
+        category,
+        imageUrl
       }
     }).then(res => {
       const result = res.result

@@ -1,3 +1,7 @@
+// 云函数：sendReminder - 发送打卡提醒
+// 功能：定时触发，检查用户是否已打卡，未打卡则发送订阅消息提醒
+// 参数：无（定时触发器调用）
+// 返回：code（状态码）、msg（提示信息）
 const cloud = require('wx-server-sdk')
 
 cloud.init({

@@ -11,7 +11,7 @@ exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext()
   const openid = wxContext.OPENID
 
-  const { id, content, duration } = event
+  const { id, content, duration, category, imageUrl } = event
 
   if (!id) {
     return {
@@ -48,12 +48,22 @@ exports.main = async (event, context) => {
       }
     }
 
+    const updateData = {
+      content: content.trim(),
+      duration: Number(duration),
+      updateTime: db.serverDate()
+    }
+
+    if (category !== undefined) {
+      updateData.category = category
+    }
+
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl
+    }
+
     await db.collection('checkin_records').doc(id).update({
-      data: {
-        content: content.trim(),
-        duration: Number(duration),
-        updateTime: db.serverDate()
-      }
+      data: updateData
     })
 
     return {

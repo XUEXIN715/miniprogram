@@ -5,13 +5,20 @@ Page({
     editing: false,
     editContent: '',
     editDuration: 0,
-    saving: false
+    editCategory: '其他',
+    editImageUrl: '',
+    tempImagePath: '',
+    saving: false,
+    // 分类
+    categoryList: ['编程开发', '语言学习', '数学逻辑', '阅读写作', '考试备考', '其他'],
+    categoryIndex: 5
   },
 
   onLoad(options) {
     if (options.id) {
       this.setData({ recordId: options.id })
       this.loadDetail(options.id)
+      this.loadCategoryList()
     } else {
       wx.showToast({
         title: '记录ID缺失',
@@ -82,6 +89,24 @@ Page({
     }, 1500)
   },
 
+  // 加载分类列表
+  loadCategoryList() {
+    wx.cloud.callFunction({
+      name: 'getCategoryList',
+      timeout: 30000,
+      data: {}
+    }).then(res => {
+      if (res.result.code === 0) {
+        const list = res.result.data.list.map(item => item.name)
+        this.setData({
+          categoryList: list
+        })
+      }
+    }).catch(err => {
+      console.error('[detail] 加载分类失败:', err)
+    })
+  },
+
   loadDetail(id) {
     this.setData({ loading: true })
     
@@ -130,10 +155,17 @@ Page({
   },
 
   onEdit() {
+    const detail = this.data.detail
+    const categoryIndex = this.data.categoryList.indexOf(detail.category || '其他')
+    
     this.setData({
       editing: true,
-      editContent: this.data.detail.content,
-      editDuration: this.data.detail.duration
+      editContent: detail.content,
+      editDuration: detail.duration,
+      editCategory: detail.category || '其他',
+      editImageUrl: detail.imageUrl || '',
+      tempImagePath: detail.imageUrl || '',
+      categoryIndex: categoryIndex >= 0 ? categoryIndex : 5
     })
   },
 
@@ -149,16 +181,83 @@ Page({
     })
   },
 
+  // 编辑时分类选择
+  onEditCategoryChange(e) {
+    const index = parseInt(e.detail.value)
+    this.setData({
+      categoryIndex: index,
+      editCategory: this.data.categoryList[index]
+    })
+  },
+
+  // 编辑时选择图片
+  onEditChooseImage() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
+      success: (res) => {
+        const tempFilePath = res.tempFiles[0].tempFilePath
+        this.setData({
+          tempImagePath: tempFilePath
+        })
+        this.uploadEditImage(tempFilePath)
+      }
+    })
+  },
+
+  // 编辑时上传图片
+  uploadEditImage(filePath) {
+    wx.showLoading({ title: '上传中...' })
+    const cloudPath = `checkin-images/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.png`
+    
+    wx.cloud.uploadFile({
+      cloudPath: cloudPath,
+      filePath: filePath,
+      success: (res) => {
+        this.setData({
+          editImageUrl: res.fileID
+        })
+        wx.showToast({ title: '上传成功', icon: 'success' })
+      },
+      fail: (err) => {
+        console.error('[detail] 上传图片失败:', err)
+        wx.showToast({ title: '上传失败', icon: 'none' })
+      },
+      complete: () => {
+        wx.hideLoading()
+      }
+    })
+  },
+
+  // 编辑时删除图片
+  onEditRemoveImage() {
+    this.setData({
+      tempImagePath: '',
+      editImageUrl: ''
+    })
+  },
+
+  // 预览图片
+  onPreviewImage() {
+    wx.previewImage({
+      urls: [this.data.tempImagePath || this.data.detail.imageUrl]
+    })
+  },
+
   onCancelEdit() {
     this.setData({
       editing: false,
       editContent: '',
-      editDuration: 0
+      editDuration: 0,
+      editCategory: '其他',
+      editImageUrl: '',
+      tempImagePath: ''
     })
   },
 
   onSaveEdit() {
-    const { editContent, editDuration, recordId } = this.data
+    const { editContent, editDuration, editCategory, editImageUrl, recordId } = this.data
 
     if (!editContent || editContent.trim() === '') {
       wx.showToast({
@@ -184,7 +283,9 @@ Page({
       data: {
         id: recordId,
         content: editContent.trim(),
-        duration: editDuration
+        duration: editDuration,
+        category: editCategory,
+        imageUrl: editImageUrl
       }
     }).then(res => {
       const result = res.result
@@ -196,7 +297,9 @@ Page({
         this.setData({
           editing: false,
           'detail.content': editContent.trim(),
-          'detail.duration': editDuration
+          'detail.duration': editDuration,
+          'detail.category': editCategory,
+          'detail.imageUrl': editImageUrl
         })
       } else {
         wx.showToast({
